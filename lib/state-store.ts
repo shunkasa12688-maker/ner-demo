@@ -34,8 +34,30 @@ const DEFAULT_STATE: AppState = {
   rev: 0,
 };
 
+/**
+ * In-memory singletons. These are the authoritative source on serverless
+ * platforms (Vercel) where the filesystem is read-only. Locally we *also*
+ * mirror to data/*.json so `npm run reset` and manual inspection still work.
+ *
+ * Within a single function instance these persist across invocations, which
+ * is what makes the cockpit → fan closed loop work on Vercel: when both
+ * tabs poll/post against the same warm instance (typical for a class demo
+ * with two open tabs), they see the same state.
+ */
+let memState: AppState | null = null;
+let memCatalog: CatalogEntry[] | null = null;
+let memSample: SampleData | null = null;
+
+async function trySafe<T>(fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch {
+    return null;
+  }
+}
+
 async function ensureDataDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+  await trySafe(() => fs.mkdir(DATA_DIR, { recursive: true }));
 }
 
 async function exists(p: string) {
@@ -47,26 +69,34 @@ async function exists(p: string) {
   }
 }
 
+// ───── Sample data ─────
+
 export async function getSample(): Promise<SampleData> {
+  if (memSample) return memSample;
   await ensureDataDir();
-  if (!(await exists(SAMPLE_PATH))) {
-    const fresh = buildSampleData();
-    await fs.writeFile(SAMPLE_PATH, JSON.stringify(fresh, null, 2), "utf8");
-    return fresh;
+  if (await exists(SAMPLE_PATH)) {
+    const raw = await trySafe(() => fs.readFile(SAMPLE_PATH, "utf8"));
+    if (raw) {
+      try {
+        memSample = JSON.parse(raw) as SampleData;
+        return memSample;
+      } catch {
+        /* fall through to fresh seed */
+      }
+    }
   }
-  const raw = await fs.readFile(SAMPLE_PATH, "utf8");
-  return JSON.parse(raw) as SampleData;
+  memSample = buildSampleData();
+  // Mirror to disk if we can (no-op on Vercel)
+  await trySafe(() =>
+    fs.writeFile(SAMPLE_PATH, JSON.stringify(memSample, null, 2), "utf8"),
+  );
+  return memSample;
 }
 
-export async function getState(): Promise<AppState> {
-  await ensureDataDir();
-  if (!(await exists(STATE_PATH))) {
-    await fs.writeFile(STATE_PATH, JSON.stringify(DEFAULT_STATE, null, 2), "utf8");
-    return { ...DEFAULT_STATE };
-  }
-  const raw = await fs.readFile(STATE_PATH, "utf8");
-  const parsed = JSON.parse(raw) as Partial<AppState>;
-  return {
+// ───── App state ─────
+
+function defensiveMerge(parsed: Partial<AppState>): AppState {
+  const merged: AppState = {
     ...DEFAULT_STATE,
     ...parsed,
     perSegmentBottleneck: {
@@ -74,12 +104,35 @@ export async function getState(): Promise<AppState> {
       ...(parsed.perSegmentBottleneck ?? {}),
     },
   } as AppState;
+  if (!ALL_SEGMENT_IDS.includes(merged.selectedSegment)) {
+    merged.selectedSegment = DEFAULT_STATE.selectedSegment;
+  }
+  return merged;
+}
+
+export async function getState(): Promise<AppState> {
+  if (memState) return memState;
+  await ensureDataDir();
+  if (await exists(STATE_PATH)) {
+    const raw = await trySafe(() => fs.readFile(STATE_PATH, "utf8"));
+    if (raw) {
+      try {
+        memState = defensiveMerge(JSON.parse(raw) as Partial<AppState>);
+        return memState;
+      } catch {
+        /* fall through to default */
+      }
+    }
+  }
+  memState = { ...DEFAULT_STATE };
+  await trySafe(() =>
+    fs.writeFile(STATE_PATH, JSON.stringify(memState, null, 2), "utf8"),
+  );
+  return memState;
 }
 
 export async function updateState(patch: Partial<AppState>): Promise<AppState> {
   const current = await getState();
-  // Any diagnosis change (segment / window / bottleneck) clears the manual override
-  // unless the patch is explicitly setting one — that way the rule narrative resumes.
   const clearsOverride =
     !("manualOverride" in patch) &&
     ("selectedSegment" in patch ||
@@ -103,35 +156,48 @@ export async function updateState(patch: Partial<AppState>): Promise<AppState> {
   if (!ALL_SEGMENT_IDS.includes(next.selectedSegment)) {
     next.selectedSegment = current.selectedSegment;
   }
-  await fs.writeFile(STATE_PATH, JSON.stringify(next, null, 2), "utf8");
+  memState = next;
+  await trySafe(() =>
+    fs.writeFile(STATE_PATH, JSON.stringify(next, null, 2), "utf8"),
+  );
   return next;
 }
 
 export async function resetState() {
+  memState = { ...DEFAULT_STATE };
+  memCatalog = [...BUILTIN_CATALOG];
   await ensureDataDir();
-  await fs.writeFile(STATE_PATH, JSON.stringify(DEFAULT_STATE, null, 2), "utf8");
-  await fs.writeFile(
-    CATALOG_PATH,
-    JSON.stringify(BUILTIN_CATALOG, null, 2),
-    "utf8",
+  await trySafe(() =>
+    fs.writeFile(STATE_PATH, JSON.stringify(memState, null, 2), "utf8"),
+  );
+  await trySafe(() =>
+    fs.writeFile(CATALOG_PATH, JSON.stringify(memCatalog, null, 2), "utf8"),
   );
 }
 
+// ───── Catalog ─────
+
 export async function getCatalog(): Promise<CatalogEntry[]> {
+  if (memCatalog) return memCatalog;
   await ensureDataDir();
-  if (!(await exists(CATALOG_PATH))) {
-    await fs.writeFile(
-      CATALOG_PATH,
-      JSON.stringify(BUILTIN_CATALOG, null, 2),
-      "utf8",
-    );
-    return [...BUILTIN_CATALOG];
+  if (await exists(CATALOG_PATH)) {
+    const raw = await trySafe(() => fs.readFile(CATALOG_PATH, "utf8"));
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as CatalogEntry[];
+        const map = new Map(parsed.map((e) => [e.kind, e]));
+        memCatalog = BUILTIN_CATALOG.map((b) => map.get(b.kind) ?? b);
+        return memCatalog;
+      } catch {
+        /* fall through */
+      }
+    }
   }
-  const raw = await fs.readFile(CATALOG_PATH, "utf8");
-  const parsed = JSON.parse(raw) as CatalogEntry[];
-  // Defensive merge — if the on-disk catalog is missing a kind, fill from builtin.
-  const map = new Map(parsed.map((e) => [e.kind, e]));
-  return BUILTIN_CATALOG.map((b) => map.get(b.kind) ?? b);
+  memCatalog = [...BUILTIN_CATALOG];
+  await trySafe(() =>
+    fs.writeFile(CATALOG_PATH, JSON.stringify(memCatalog, null, 2), "utf8"),
+  );
+  return memCatalog;
 }
 
 export async function updateCatalogEntry(
@@ -144,14 +210,18 @@ export async function updateCatalogEntry(
     throw new Error(`Unknown intervention kind: ${kind}`);
   }
   const next = { ...current[idx], ...patch, kind };
-  current[idx] = next;
-  await fs.writeFile(CATALOG_PATH, JSON.stringify(current, null, 2), "utf8");
+  const updated = [...current];
+  updated[idx] = next;
+  memCatalog = updated;
   // Bump state rev so polling clients pick up the change on their next tick.
   const state = await getState();
-  await fs.writeFile(
-    STATE_PATH,
-    JSON.stringify({ ...state, rev: state.rev + 1 }, null, 2),
-    "utf8",
+  memState = { ...state, rev: state.rev + 1 };
+
+  await trySafe(() =>
+    fs.writeFile(CATALOG_PATH, JSON.stringify(updated, null, 2), "utf8"),
+  );
+  await trySafe(() =>
+    fs.writeFile(STATE_PATH, JSON.stringify(memState, null, 2), "utf8"),
   );
   return next;
 }
