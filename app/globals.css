@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+:root {
+  /* NER brand */
+  --ner-navy: #002F65;
+  --ner-navy-deep: #001a3a;
+  --ner-red: #DD1F2D;
+  --ner-red-soft: #f04859;
+  --ner-white: #ffffff;
+
+  /* BI cockpit palette (now lighter / macOS-like vibrancy) */
+  --bi-bg: #0c1024;
+  --bi-surface: rgba(255, 255, 255, 0.05);
+  --bi-surface-hi: rgba(255, 255, 255, 0.09);
+  --bi-border: rgba(255, 255, 255, 0.1);
+  --bi-border-strong: rgba(255, 255, 255, 0.18);
+  --bi-text: #f1f5ff;
+  --bi-text-dim: #a5adcc;
+  --bi-accent: #6aa1ff;
+  --bi-pos: #4ade80;
+  --bi-neg: #f87171;
+  --bi-warn: #fbbf24;
+}
+
+@theme inline {
+  --color-ner-navy: var(--ner-navy);
+  --color-ner-navy-deep: var(--ner-navy-deep);
+  --color-ner-red: var(--ner-red);
+  --color-ner-red-soft: var(--ner-red-soft);
+  --color-ner-white: var(--ner-white);
+
+  --color-bi-bg: var(--bi-bg);
+  --color-bi-surface: var(--bi-surface);
+  --color-bi-surface-hi: var(--bi-surface-hi);
+  --color-bi-border: var(--bi-border);
+  --color-bi-border-strong: var(--bi-border-strong);
+  --color-bi-text: var(--bi-text);
+  --color-bi-text-dim: var(--bi-text-dim);
+  --color-bi-accent: var(--bi-accent);
+  --color-bi-pos: var(--bi-pos);
+  --color-bi-neg: var(--bi-neg);
+  --color-bi-warn: var(--bi-warn);
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-geist), system-ui, sans-serif;
+  --font-display-cockpit: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-math-stack: var(--font-math), "STIX Two Text", "Latin Modern Math", "Cambria Math", "TeX Gyre Termes Math", "Times New Roman", serif;
+}
+
+html,
+body {
+  min-height: 100%;
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  color: var(--bi-text);
+  /* Solid fallback only — the real aurora is painted by <Backdrop /> */
+  background: #0a0a0c;
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The aurora + grain backdrop is rendered by <Backdrop /> per-page as a
+   fixed-position element. Body classes are kept only for text-color overrides. */
+
+body.theme-cockpit { color: var(--bi-text); }
+body.theme-fan { color: #e6ebff; }
+
+/* Global keyframes — defined here so inline `animation` rules in <Backdrop />
+   actually find them. (styled-jsx scopes keyframes by hash, which silently
+   broke the previous setup and left the blobs frozen on first paint.) */
+@keyframes rotating-hero-fade {
+  0%   { opacity: 0; }
+  3%   { opacity: 1; }
+  17%  { opacity: 1; }
+  20%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes rotating-hero-kenburns {
+  0%   { transform: scale(1.12) translate(0, 0); }
+  20%  { transform: scale(1.0) translate(-1.2%, 0.8%); }
+  100% { transform: scale(1.12) translate(0, 0); }
+}
+
+@keyframes blob-a {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-6vw, 4vh) scale(1.08); }
+  100% { transform: translate(5vw, -3vh) scale(0.94); }
+}
+@keyframes blob-b {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(5vw, -3vh) scale(1.05); }
+  100% { transform: translate(-4vw, 5vh) scale(1.12); }
+}
+@keyframes blob-c {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-4vw, -5vh) scale(0.92); }
+  100% { transform: translate(4vw, 3vh) scale(1.08); }
+}
+
+/* =====================================================================
+   UTILITIES
+   ===================================================================== */
+
+.bi-card {
+  background: var(--bi-surface);
+  border: 1px solid var(--bi-border);
+  border-radius: 1rem;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+.bi-card-hi {
+  background: var(--bi-surface-hi);
+  border: 1px solid var(--bi-border-strong);
+  border-radius: 1rem;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+}
+
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1rem;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* Modal surface — clearly lighter than the page so it floats. Solid color
+   (no see-through), strong border to define the edge, big drop shadow for
+   depth. Pair with .modal-overlay on the parent. */
+.modal-surface {
+  background: linear-gradient(180deg, #2a2f55 0%, #1d2240 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 1rem;
+  box-shadow:
+    0 40px 80px -10px rgba(0, 0, 0, 0.7),
+    0 10px 30px -10px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.modal-overlay {
+  background: rgba(2, 4, 12, 0.68);
+}
+
+/* Overleaf-style math display — STIX Two Text with italic variables and
+   roomy line-height so equations breathe like they do in a paper. */
+.math-display {
+  font-family: var(--font-math-stack);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+  color: #f1f5ff;
+  background: linear-gradient(180deg, #f8f5ec 0%, #f3efe2 100%);
+  color: #1a1f2a;
+  border: 1px solid #d8d2bf;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+.math-display .var,
+.math-display em {
+  font-style: italic;
+  font-family: var(--font-math-stack);
+}
+.math-display .label {
+  font-style: normal;
+  font-weight: 500;
+}
+.math-display .small {
+  font-size: 0.82em;
+  color: #555048;
+}
+
+/* Display fonts */
+.font-display {
+  font-family: var(--font-bricolage), var(--font-inter), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-display-cockpit {
+  font-family: var(--font-space), var(--font-inter), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Trace pulse */
+@keyframes pulse-highlight {
+  0%   { box-shadow: 0 0 0 0 rgba(106, 161, 255, 0.45); }
+  60%  { box-shadow: 0 0 0 10px rgba(106, 161, 255, 0);  }
+  100% { box-shadow: 0 0 0 0 rgba(106, 161, 255, 0);    }
+}
+.pulse-on-change {
+  animation: pulse-highlight 0.9s ease-out;
+}
+
+/* Soccer ball spin + float */
+@keyframes ball-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ball-float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-12px); }
+}
+.ball-spin {
+  animation: ball-spin 14s linear infinite;
+}
+.ball-float {
+  animation: ball-float 6s ease-in-out infinite;
+}
+
+/* Halo glow under the soccer ball */
+@keyframes halo-pulse {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.85; transform: translate(-50%, -50%) scale(1.08); }
+}
+.halo-pulse {
+  animation: halo-pulse 5s ease-in-out infinite;
+}
+
+/* Floating particles (small dots around the ball) */
+@keyframes drift {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  20%  { opacity: 0.85; }
+  100% { transform: translate(var(--dx, 40px), var(--dy, -60px)); opacity: 0; }
+}
+
+/* Tabs hover/active baseline (used by Tabs primitive) */
+.tab-pill {
+  transition: background 0.15s ease, color 0.15s ease;
+}
