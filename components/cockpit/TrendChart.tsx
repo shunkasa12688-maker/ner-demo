@@ -38,7 +38,7 @@ export function TrendChart({
               fontSize: 12,
             }}
             labelFormatter={() => ""}
-            formatter={(v: number) => [`${v}`, "score"]}
+            formatter={(v) => [`${v}`, "score"]}
           />
           <Area
             type="monotone"
