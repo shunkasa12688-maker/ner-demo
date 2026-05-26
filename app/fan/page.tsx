@@ -10,7 +10,8 @@ import { InterventionRouter } from "@/components/fan/InterventionRouter";
 import { LiveStripe } from "@/components/fan/LiveStripe";
 import { NewsStrip } from "@/components/fan/NewsStrip";
 import { RotatingHero } from "@/components/fan/RotatingHero";
-import { HERO_BG } from "@/components/fan/images";
+import { HERO_SETS } from "@/components/fan/images";
+import { resolveCatalog, selectIntervention } from "@/lib/playbook";
 
 export default function FanPage() {
   const { state, sample, catalog } = useAppState({ pollMs: 1000 });
@@ -28,15 +29,38 @@ export default function FanPage() {
     );
   }
 
+  // Compute the currently-active intervention so the hero background can
+  // theme to it. Same logic InterventionRouter uses internally — duplicated
+  // here so the page-level hero can swap image sets when the cockpit picks
+  // a different category.
+  const segment = sample.segments.find((s) => s.id === state.selectedSegment)!;
+  const bottleneck = state.perSegmentBottleneck[state.selectedSegment];
+  const resolvedCatalog = resolveCatalog(catalog);
+  const ruleResult = selectIntervention({
+    bottleneck,
+    segment,
+    timeWindow: state.timeWindow,
+    catalog: resolvedCatalog,
+  });
+  const activeKind = state.manualOverride ?? ruleResult.kind;
+  const heroImages = HERO_SETS[activeKind];
+
   return (
     <div className="theme-fan relative min-h-[100dvh]">
       <Backdrop variant="fan" />
 
       <div className="relative z-10">
-        {/* Hero — premium scale, 1080p-tuned. Rotating editorial photos
-            crossfade behind the headline; cycle: 35s, ken-burns zoom. */}
+        {/* Hero — premium scale, 1080p-tuned. Rotating photos crossfade
+            behind the headline (35s cycle, ken-burns). The image set is
+            keyed by the cockpit's active intervention, so the background
+            re-themes when the category changes; key={activeKind} forces a
+            clean restart of the carousel on swap. */}
         <section className="relative overflow-hidden">
-          <RotatingHero images={HERO_BG} className="absolute inset-0" />
+          <RotatingHero
+            key={activeKind}
+            images={heroImages}
+            className="absolute inset-0"
+          />
 
           <div className="relative z-10 mx-auto flex min-h-[88vh] max-w-[1400px] flex-col px-8 pb-24 pt-10 md:px-12">
           <header className="flex items-center justify-between">
@@ -109,7 +133,7 @@ export default function FanPage() {
           <div className="text-white/30">
             <strong className="text-white/45">Sources & attribution.</strong>{" "}
             Class consulting prototype themed around the New England Revolution
-            (Major League Soccer). On-screen editorial photos and tile artwork
+            (Major League Soccer). Editorial photos and promotional banners
             are linked from the team&apos;s official site at{" "}
             <a
               href="https://www.revolutionsoccer.net"
@@ -118,8 +142,16 @@ export default function FanPage() {
               revolutionsoccer.net
             </a>{" "}
             (CDN: images.mlssoccer.com) — used for educational, non-commercial
-            reference only; all rights remain with MLS and the club. Crest
-            stickers and any club-styled marks shown here are original
+            reference only; all rights remain with MLS and the club. Stadium
+            photos and the classic soccer-ball illustration are linked from{" "}
+            <a
+              href="https://commons.wikimedia.org"
+              className="underline transition hover:text-white/60"
+            >
+              Wikimedia Commons
+            </a>{" "}
+            under their respective public-domain / Creative-Commons licenses.
+            Crest stickers and any club-styled marks shown here are original
             illustrations for this demo and do not reproduce the club&apos;s
             trademarked logo. Match data, fan quotes, news headlines, and
             statistics are illustrative.
