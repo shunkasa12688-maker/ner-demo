@@ -1,9 +1,18 @@
 "use client";
 
 import { Newspaper } from "@phosphor-icons/react";
-import { NEWS } from "./images";
+import { HERO, NEWS } from "./images";
 
-const ARTICLES = [
+interface NewsArticle {
+  category: string;
+  headline: string;
+  byline: string;
+  snippet: string;
+  img: string;
+  color: string;
+}
+
+const ARTICLES: NewsArticle[] = [
   {
     category: "Match recap",
     headline: "Vrioni's late free-kick rescues a point at Gillette",
@@ -38,15 +47,57 @@ const ARTICLES = [
   },
 ];
 
-export function NewsStrip() {
+// World Cup-themed news feed used when /fan is in WC mode. Headlines and
+// images are tournament-focused — no off-topic MLS / academy stories.
+const WC_ARTICLES: NewsArticle[] = [
+  {
+    category: "Tournament recap",
+    headline: "Brazil edge Portugal 2–1 in Gillette's opening fixture",
+    byline: "Tournament desk · 1h ago",
+    snippet: "A second-half flick decides the opener. Foxborough's first World Cup night didn't disappoint.",
+    img: HERO.wc,
+    color: "bg-amber-500/25 text-amber-100 border-amber-400/40",
+  },
+  {
+    category: "Revs in the tournament",
+    headline: "Three Revs walked out for their national sides this week",
+    byline: "Revs Newsroom · 3h ago",
+    snippet: "Where to watch each of them, what to look for, and when they're back in red and navy.",
+    img: HERO.postwc,
+    color: "bg-rose-500/25 text-rose-100 border-rose-400/40",
+  },
+  {
+    category: "Around Boston",
+    headline: "Watch parties pack the North End for opening weekend",
+    byline: "City desk · 6h ago",
+    snippet: "Eight neighborhoods, eight venues. We mapped where to go for each fixture.",
+    img: HERO.event,
+    color: "bg-emerald-500/25 text-emerald-100 border-emerald-400/40",
+  },
+  {
+    category: "Tournament guide",
+    headline: "Your week-by-week guide to the World Cup at Gillette",
+    byline: "Editor's pick · today",
+    snippet: "Seven matches, four groups, one host city. Dates, kickoff times, and what each round means.",
+    img: HERO.wcDataPitch,
+    color: "bg-sky-500/25 text-sky-100 border-sky-400/40",
+  },
+];
+
+export function NewsStrip({ variant = "default" }: { variant?: "default" | "wc" } = {}) {
+  const articles = variant === "wc" ? WC_ARTICLES : ARTICLES;
+  const heading = variant === "wc"
+    ? "World Cup · this week's reading"
+    : "Latest from the newsroom";
+
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
         <Newspaper className="h-4 w-4 text-white/70" />
-        Latest from the newsroom
+        {heading}
       </div>
       <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:thin]">
-        {ARTICLES.map((a) => (
+        {articles.map((a) => (
           <article
             key={a.headline}
             className="glass-card flex w-72 flex-shrink-0 snap-start flex-col overflow-hidden"

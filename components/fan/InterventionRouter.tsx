@@ -13,6 +13,15 @@ import { ReactionHub } from "./ReactionHub";
 import { EventInvite } from "./EventInvite";
 import { WorldCupHub } from "./WorldCupHub";
 import { PostWCNudge } from "./PostWCNudge";
+import { SponsorPremium } from "./SponsorPremium";
+import { TicketConversion } from "./TicketConversion";
+import { MerchandiseUplift } from "./MerchandiseUplift";
+import { MarketingSavings } from "./MarketingSavings";
+import { DynamicPricing } from "./DynamicPricing";
+import { InsightPoll } from "./InsightPoll";
+import { WCSponsorRally } from "./WCSponsorRally";
+import { WCMerchDrop } from "./WCMerchDrop";
+import { WCDataPitch } from "./WCDataPitch";
 
 export function InterventionRouter({
   state,
@@ -86,6 +95,15 @@ export function InterventionRouter({
           {kind === "event-invite" && <EventInvite segment={segment} />}
           {kind === "wc-hub" && <WorldCupHub segment={segment} />}
           {kind === "post-wc-nudge" && <PostWCNudge segment={segment} />}
+          {kind === "sponsor-premium" && <SponsorPremium segment={segment} />}
+          {kind === "ticket-conversion" && <TicketConversion segment={segment} />}
+          {kind === "merchandise-uplift" && <MerchandiseUplift segment={segment} />}
+          {kind === "marketing-savings" && <MarketingSavings segment={segment} />}
+          {kind === "dynamic-pricing" && <DynamicPricing segment={segment} />}
+          {kind === "insight-poll" && <InsightPoll segment={segment} />}
+          {kind === "wc-sponsor-rally" && <WCSponsorRally segment={segment} />}
+          {kind === "wc-merch-drop" && <WCMerchDrop segment={segment} />}
+          {kind === "wc-data-pitch" && <WCDataPitch segment={segment} />}
         </motion.div>
       </AnimatePresence>
     </>

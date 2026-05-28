@@ -87,6 +87,60 @@ export const HERO_SETS: Record<InterventionKind, string[]> = {
     WM_STADIUM_FOXBORO,
     NER_BANNER_C,
   ],
+  "sponsor-premium": [
+    NER_BANNER_E,
+    NER_EDITORIAL_HERO,
+    WM_STADIUM_OUTDOOR,
+    NER_BANNER_C,
+  ],
+  "ticket-conversion": [
+    WM_STADIUM_FOXBORO,
+    NER_EDITORIAL_SCHEDULE,
+    NER_BANNER_A,
+    WM_STADIUM_AERIAL,
+  ],
+  "merchandise-uplift": [
+    NER_BANNER_D,
+    NER_PORTRAIT,
+    NER_BANNER_B,
+    NER_EDITORIAL_HERO,
+  ],
+  "marketing-savings": [
+    NER_BANNER_C,
+    WM_MATCH_IN_PROGRESS,
+    NER_BANNER_A,
+    NER_EDITORIAL_HERO,
+  ],
+  "dynamic-pricing": [
+    NER_EDITORIAL_SCHEDULE,
+    WM_STADIUM_FOXBORO,
+    NER_BANNER_A,
+    NER_EDITORIAL_HERO,
+  ],
+  "insight-poll": [
+    WM_MATCH_IN_PROGRESS,
+    NER_BANNER_B,
+    NER_EDITORIAL_HERO,
+    NER_PORTRAIT,
+  ],
+  "wc-sponsor-rally": [
+    NER_BANNER_E,
+    NER_EDITORIAL_HERO,
+    WM_STADIUM_AERIAL,
+    NER_BANNER_C,
+  ],
+  "wc-merch-drop": [
+    NER_BANNER_D,
+    NER_BANNER_B,
+    NER_PORTRAIT,
+    NER_BANNER_A,
+  ],
+  "wc-data-pitch": [
+    WM_STADIUM_AERIAL,
+    NER_EDITORIAL_HERO,
+    NER_EDITORIAL_SCHEDULE,
+    WM_STADIUM_FOXBORO,
+  ],
 };
 
 // Default rotation (used as a fallback / pre-state-load)
@@ -99,6 +153,15 @@ export const HERO = {
   event: NER_BANNER_B,
   wc: NER_EDITORIAL_SCHEDULE,
   postwc: NER_BANNER_A,
+  sponsor: NER_BANNER_E,
+  ticket: WM_STADIUM_FOXBORO,
+  merch: NER_BANNER_D,
+  targeting: NER_BANNER_C,
+  dynamicPricing: NER_EDITORIAL_SCHEDULE,
+  insightPoll: WM_MATCH_IN_PROGRESS,
+  wcSponsorRally: NER_BANNER_E,
+  wcMerchDrop: NER_BANNER_D,
+  wcDataPitch: WM_STADIUM_AERIAL,
 };
 
 export const TILE = {

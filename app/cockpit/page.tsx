@@ -18,6 +18,7 @@ import { LeverDetailDialog } from "@/components/cockpit/LeverDetailDialog";
 import { TopBar } from "@/components/cockpit/TopBar";
 import { DecisionHero } from "@/components/cockpit/DecisionHero";
 import { Tabs } from "@/components/cockpit/Tabs";
+import { RevenuePanel } from "@/components/cockpit/RevenuePanel";
 import type { Lever, InterventionKind } from "@/lib/types";
 
 const LEVERS: Lever[] = ["heat", "growth", "retention", "money"];
@@ -56,6 +57,14 @@ export default function CockpitPage() {
   const activeKind: InterventionKind = state.manualOverride ?? playbook.kind;
   const activeEntry = resolvedCatalog[activeKind];
   const bottleneckLever: Lever = bottleneck;
+  // 5 + 5 split. WC mode surfaces tournament-window playbooks (fixture
+  // hub, sponsor rally, merch drop, post-WC bridge, data-platform pitch).
+  // Normal seasons surface engagement + the two case-study-driven ones
+  // (dynamic-pricing, insight-poll).
+  const playbookOrder: InterventionKind[] =
+    state.timeWindow === "during-wc"
+      ? ["wc-hub", "post-wc-nudge", "wc-sponsor-rally", "wc-merch-drop", "wc-data-pitch"]
+      : ["quiz", "reaction-hub", "event-invite", "dynamic-pricing", "insight-poll"];
 
   async function handleCatalogEdit(
     kind: InterventionKind,
@@ -130,6 +139,7 @@ export default function CockpitPage() {
           <Tabs
             tabs={[
               { id: "levers", label: "Levers" },
+              { id: "revenue", label: "Revenue" },
               { id: "value", label: "Customer Value" },
               { id: "playbook", label: "Playbook", badge: 5 },
               { id: "kpi", label: "Club KPIs" },
@@ -151,6 +161,11 @@ export default function CockpitPage() {
                   </div>
                 );
               }
+              if (active === "revenue") {
+                return (
+                  <RevenuePanel wcMode={state.timeWindow === "during-wc"} />
+                );
+              }
               if (active === "value") {
                 return (
                   <div className="grid gap-5 lg:grid-cols-2">
@@ -170,6 +185,7 @@ export default function CockpitPage() {
                   <div className="grid gap-5 lg:grid-cols-[2fr,1fr]">
                     <InterventionCatalog
                       catalog={resolvedCatalog}
+                      order={playbookOrder}
                       activeKind={playbook.kind}
                       overrideKind={state.manualOverride}
                       onPreview={handlePreview}

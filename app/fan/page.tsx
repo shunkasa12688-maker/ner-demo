@@ -10,8 +10,13 @@ import { InterventionRouter } from "@/components/fan/InterventionRouter";
 import { LiveStripe } from "@/components/fan/LiveStripe";
 import { NewsStrip } from "@/components/fan/NewsStrip";
 import { RotatingHero } from "@/components/fan/RotatingHero";
+import { WCMode } from "@/components/fan/WCMode";
 import { HERO_SETS } from "@/components/fan/images";
-import { resolveCatalog, selectIntervention } from "@/lib/playbook";
+import {
+  PLAYBOOK_HEROES,
+  resolveCatalog,
+  selectIntervention,
+} from "@/lib/playbook";
 
 export default function FanPage() {
   const { state, sample, catalog } = useAppState({ pollMs: 1000 });
@@ -29,6 +34,11 @@ export default function FanPage() {
     );
   }
 
+  // WC mode → tournament-grade wrapper around the active playbook.
+  if (state.timeWindow === "during-wc") {
+    return <WCMode state={state} sample={sample} catalog={catalog} />;
+  }
+
   // Compute the currently-active intervention so the hero background can
   // theme to it. Same logic InterventionRouter uses internally — duplicated
   // here so the page-level hero can swap image sets when the cockpit picks
@@ -44,6 +54,7 @@ export default function FanPage() {
   });
   const activeKind = state.manualOverride ?? ruleResult.kind;
   const heroImages = HERO_SETS[activeKind];
+  const hero = PLAYBOOK_HEROES[activeKind];
 
   return (
     <div className="theme-fan relative min-h-[100dvh]">
@@ -92,25 +103,25 @@ export default function FanPage() {
             </div>
           </header>
 
-          {/* Headline block — anchored bottom-left of hero */}
-          <div className="mt-auto max-w-5xl pt-32">
+          {/* Headline block — anchored bottom-left of hero. Hero copy
+              swaps per active playbook so the cockpit→fan flip is obvious. */}
+          <div key={activeKind} className="mt-auto max-w-5xl pt-32">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-white/70 backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-ner-red shadow-[0_0_10px_rgba(221,31,45,0.9)]" />
-              World Cup 2026 · Boston hosts
+              {hero.eyebrow}
             </span>
             <h1 className="font-display mt-6 text-6xl font-extrabold leading-[0.94] tracking-[-0.04em] text-white sm:text-7xl md:text-[5.5rem] xl:text-[6.5rem]">
-              The Revs, the
+              {hero.lines[0]}
               <br />
-              World Cup, and
+              {hero.lines[1]}
               <br />
               <span className="bg-gradient-to-r from-white via-white to-ner-red-soft bg-clip-text text-transparent">
-                your weekend.
+                {hero.lines[2]}
               </span>
             </h1>
             <p className="mt-8 max-w-2xl text-base leading-relaxed text-white/65 md:text-lg">
-              Live scores. Reaction hubs. Watch parties one neighborhood over.
-              What you see below is decided by the strategy cockpit — flip a
-              control there and this page swaps.
+              What you see below is decided by the strategy cockpit — flip
+              a playbook there and this page swaps.
             </p>
           </div>
           </div>

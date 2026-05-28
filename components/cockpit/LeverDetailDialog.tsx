@@ -110,16 +110,14 @@ export function LeverDetailDialog({
             </div>
           </Section>
 
-          <Section title="Formula">
-            <p className="mb-3 text-sm text-bi-text">{def.formulaPlain}</p>
-            <div className="math-display">
-              <MathFormula lever={lever} />
-            </div>
+          <Section title="Why this matters">
+            <p className="text-sm leading-relaxed text-white/90">
+              {def.whyThisMatters}
+            </p>
             <div className="mt-3 text-[11px] leading-relaxed text-bi-text-dim">
               The numbers shown are{" "}
               <span className="font-semibold text-bi-text">illustrative</span>{" "}
-              — generated from a deterministic seed for the demo. The formula
-              above describes how this would run against the real pipeline.
+              — generated from a deterministic seed for the demo.
             </div>
           </Section>
         </div>
@@ -171,124 +169,3 @@ function ThresholdTile({
   );
 }
 
-/**
- * Per-lever math formula rendered in Overleaf-style serif math typography.
- * Variables are italic, operators upright, subscripts via <sub>.
- */
-function MathFormula({ lever }: { lever: Lever }) {
-  if (lever === "heat") {
-    return (
-      <>
-        <div className="text-center">
-          <span className="label">Heat</span>{" "}
-          <span>=</span>{" "}
-          <span className="label">rescale</span>
-          <sub className="small">0–100</sub>
-          {" "}
-          <span>
-            (
-            <span className="label">z</span>(<em>W</em>
-            <sup className="small">⊤</sup>
-            <em>v</em>, <em>B</em>
-            <sub className="small">8</sub>)
-            )
-          </span>
-        </div>
-        <div className="mt-3 border-t border-black/10 pt-3 text-[0.95em]">
-          <div className="text-center">
-            <em>W</em>
-            <sup className="small">⊤</sup>
-            <em>v</em> ={" "}
-            <em>w</em>
-            <sub className="small">1</sub>·viewed +{" "}
-            <em>w</em>
-            <sub className="small">2</sub>·share +{" "}
-            <em>w</em>
-            <sub className="small">3</sub>·comment
-          </div>
-          <div className="mt-1 text-center">
-            <em>B</em>
-            <sub className="small">8</sub> ={" "}
-            <span className="label">mean</span> of last 8 windows
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (lever === "growth") {
-    return (
-      <>
-        <div className="text-center">
-          <span className="label">Growth</span>{" "}
-          <span>=</span>{" "}
-          <span className="inline-flex flex-col align-middle text-[0.9em]">
-            <span className="border-b border-black/60 px-2">Σ <em>a</em>
-              <sub className="small">i</sub></span>
-            <span className="px-2"><em>N</em>
-              <sub className="small">viewed</sub></span>
-          </span>
-          {" "}× 100 / <em>μ</em>
-          <sub className="small">MLS</sub>
-        </div>
-        <div className="mt-3 border-t border-black/10 pt-3 text-[0.95em]">
-          <div className="text-center">
-            <em>a</em>
-            <sub className="small">i</sub> ∈ {"{ rsvp, preorder, comment, share }"}
-          </div>
-          <div className="mt-1 text-center">
-            <em>μ</em>
-            <sub className="small">MLS</sub> = MLS-median engagement ratio
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (lever === "retention") {
-    return (
-      <>
-        <div className="text-center">
-          <span className="label">Retention</span>{" "}
-          <span>=</span>{" "}
-          <span className="inline-flex flex-col align-middle text-[0.9em]">
-            <span className="border-b border-black/60 px-2">| <em>A</em>
-              <sub className="small">w</sub> ∩ <em>A</em>
-              <sub className="small">w−1</sub> |</span>
-            <span className="px-2">| <em>A</em>
-              <sub className="small">w−1</sub> |</span>
-          </span>
-          {" "}× 100
-        </div>
-        <div className="mt-3 border-t border-black/10 pt-3 text-center text-[0.95em]">
-          <em>A</em>
-          <sub className="small">w</sub> ={" "}
-          <span className="label">set of active people in window</span>{" "}
-          <em>w</em>
-        </div>
-      </>
-    );
-  }
-
-  // money
-  return (
-    <>
-      <div className="text-center">
-        <span className="label">Money</span>{" "}
-        <span>=</span>{" "}
-        <span className="inline-flex flex-col align-middle text-[0.9em]">
-          <span className="border-b border-black/60 px-2">$
-            <sub className="small">matchday</sub></span>
-          <span className="px-2"><em>N</em>
-            <sub className="small">active</sub></span>
-        </span>
-        {" "}/ <em>μ</em>
-        <sub className="small">$/fan</sub>{" "}× 50
-      </div>
-      <div className="mt-3 border-t border-black/10 pt-3 text-center text-[0.95em]">
-        <em>μ</em>
-        <sub className="small">$/fan</sub> = MLS-median revenue per active fan
-      </div>
-    </>
-  );
-}

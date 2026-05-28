@@ -76,7 +76,16 @@ export interface InterventionRow {
     | "reaction-hub"
     | "event-invite"
     | "wc-hub"
-    | "post-wc-nudge";
+    | "post-wc-nudge"
+    | "sponsor-premium"
+    | "ticket-conversion"
+    | "merchandise-uplift"
+    | "marketing-savings"
+    | "dynamic-pricing"
+    | "insight-poll"
+    | "wc-sponsor-rally"
+    | "wc-merch-drop"
+    | "wc-data-pitch";
   target_segment: SegmentId | "all";
   target_lever: Lever;
   match_id: string | null;
@@ -106,7 +115,16 @@ export type InterventionKind =
   | "reaction-hub"
   | "event-invite"
   | "wc-hub"
-  | "post-wc-nudge";
+  | "post-wc-nudge"
+  | "sponsor-premium"
+  | "ticket-conversion"
+  | "merchandise-uplift"
+  | "marketing-savings"
+  | "dynamic-pricing"
+  | "insight-poll"
+  | "wc-sponsor-rally"
+  | "wc-merch-drop"
+  | "wc-data-pitch";
 
 export interface CatalogEntry {
   kind: InterventionKind;

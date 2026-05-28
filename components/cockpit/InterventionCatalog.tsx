@@ -7,16 +7,9 @@ import { type InterventionKind } from "@/lib/playbook";
 import type { CatalogEntry } from "@/lib/types";
 import { CatalogEditDialog } from "./CatalogEditDialog";
 
-const ORDER: InterventionKind[] = [
-  "quiz",
-  "reaction-hub",
-  "event-invite",
-  "wc-hub",
-  "post-wc-nudge",
-];
-
 export function InterventionCatalog({
   catalog,
+  order,
   activeKind,
   overrideKind,
   onPreview,
@@ -24,6 +17,7 @@ export function InterventionCatalog({
   onEdit,
 }: {
   catalog: Record<InterventionKind, CatalogEntry>;
+  order: InterventionKind[];
   activeKind: InterventionKind;
   overrideKind: InterventionKind | null;
   onPreview: (kind: InterventionKind) => void;
@@ -42,7 +36,7 @@ export function InterventionCatalog({
           Intervention catalog
         </div>
         <div className="text-[11px] text-bi-text-dim">
-          5 of N · click ▶ to preview · ✎ to edit
+          {order.length} of N · click ▶ to preview · ✎ to edit
         </div>
       </div>
 
@@ -66,7 +60,7 @@ export function InterventionCatalog({
       )}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {ORDER.map((kind) => {
+        {order.map((kind) => {
           const meta = catalog[kind];
           const isRuleActive = kind === activeKind && !overrideKind;
           const isOverride = kind === overrideKind;

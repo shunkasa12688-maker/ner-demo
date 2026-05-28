@@ -9,6 +9,8 @@ export interface LeverDefinition {
   formulaPlain: string;
   pseudocode: string;
   thresholds: { low: string; ok: string; high: string };
+  /** What this lever signals and what action follows from it — replaces math in the dialog. */
+  whyThisMatters: string;
   /** Whether the underlying number is something we'd actually have at run time. */
   measuredOrModeled: "measured" | "modeled";
 }
@@ -34,6 +36,8 @@ export const LEVER_DEFINITIONS: Record<Lever, LeverDefinition> = {
       ok: "40–70 — present but not loud",
       high: "> 70 — they're hot; capture this energy before it cools",
     },
+    whyThisMatters:
+      "Heat tells you whether a segment is paying attention right now versus its own recent baseline. When heat spikes, that audience is reachable — emails get opened, push gets clicked, content travels. When it fades, even strong offers go unnoticed. It's the leading indicator: nothing else moves until attention does.",
     measuredOrModeled: "modeled",
   },
   growth: {
@@ -56,6 +60,8 @@ export const LEVER_DEFINITIONS: Record<Lever, LeverDefinition> = {
       ok: "35–65 — turning some attention into action",
       high: "> 65 — high-converting; the engine is working",
     },
+    whyThisMatters:
+      "Growth is what share of attention turns into action — RSVPs, preorders, comments, shares. It's the funnel between awareness and commitment. High heat with low growth means the message landed but didn't move anyone; that's a creative problem, not a reach problem.",
     measuredOrModeled: "modeled",
   },
   retention: {
@@ -77,6 +83,8 @@ export const LEVER_DEFINITIONS: Record<Lever, LeverDefinition> = {
       ok: "45–70 — typical churn",
       high: "> 70 — they keep showing up",
     },
+    whyThisMatters:
+      "Retention is the share of last window's engaged fans who showed up again this window. It's the leakiest part of the bucket — acquisition is loud, churn is silent. A weak retention number means every campaign starts from scratch and we never compound the audiences we already built.",
     measuredOrModeled: "measured",
   },
   money: {
@@ -99,6 +107,8 @@ export const LEVER_DEFINITIONS: Record<Lever, LeverDefinition> = {
       ok: "35–65 — yield is on-trend with the league",
       high: "> 65 — punching above weight on revenue per fan",
     },
+    whyThisMatters:
+      "Money is what each active fan is worth today, indexed against the MLS median. High attention with low money means we're filling the room but underpricing the experience. This is the lever the long-term club-economics story rides on — stadium, sponsorship, and premium products all sit downstream of revenue per fan.",
     measuredOrModeled: "modeled",
   },
 };

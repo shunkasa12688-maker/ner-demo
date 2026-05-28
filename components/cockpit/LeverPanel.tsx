@@ -3,7 +3,7 @@
 import { ArrowDownRight, ArrowUpRight, Info, Minus } from "@phosphor-icons/react";
 import type { Lever, LeverReading } from "@/lib/types";
 import { DataTag } from "@/components/DataTag";
-import { TrendChart } from "./TrendChart";
+import { LeverSparkline } from "./LeverSparkline";
 
 const LEVER_META: Record<Lever, { title: string; subtitle: string; color: string }> = {
   heat: { title: "Heat", subtitle: "Attention", color: "#f87171" },
@@ -78,10 +78,10 @@ export function LeverPanel({
         </span>
       </div>
       <div className="mt-3">
-        <TrendChart data={reading.history} color={m.color} />
+        <LeverSparkline lever={lever} color={m.color} />
       </div>
       <div className="mt-2 text-[10px] text-bi-text-dim">
-        Past 8 windows
+        Illustrative 12-month projection
         <DataTag kind="modeled" />
       </div>
     </Tag>
